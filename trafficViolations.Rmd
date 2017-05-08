@@ -1,0 +1,13 @@
+---
+title: "Predicting the probability of a red car getting a traffic violation."
+author: "Angel Soriano, Miriam Flores, Noemi Cuin "
+date: "May 12, 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+It has been rumored that red cars tend to get more traffic violations more often than any other color of car. Our calculations will be used to see if this rumor is a myth or if the data gathered from a 2017 data set of traffic violations across the country will reflect differently.
+
+Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
+
