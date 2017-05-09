@@ -11,3 +11,29 @@ It has been rumored that red cars tend to get more traffic violations more often
 
 Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
 
+```{r}
+setwd("/Users/noemi/Desktop/datasci/traffic-Violations-project/")
+
+dat=read.csv("traffic.csv")
+
+```
+
+###Data Exploration and Visualization
+To get an idea of what we're working with, we should build some histograms and tables to vizualize the types of violations our data has as well as the different colors and models of cars.Because there's so much data, we're going to take the top 10 models and colors of the cars, as well as the top 10 traffic violations and build from there. 
+
+```{r}
+#par(mfrow=c(3,1))
+violationNames=head(sort(table(dat$Description),decreasing=TRUE),10)
+names(violationNames)=tolower(c("NOT FOLLOWING TRAFFIC INSTRUCTIONS","NO REGISTRATION","DRIVING WITH SUSPENDED REGISTRATION","DRIVING W/O A LICENSE","USING PHONE WHILE DRIVING","EXPIRED REGISTRATION","FAILURE TO STOP AT STOP SIGN","DRIVING W/SUSPENDED LICENSE","DRIVING W/O SEATBELT","DRIVING OVER SPEED LIMIT"))
+
+
+par(mar=c(5,14,4,0.1))
+barplot(head(sort(table(dat$Color),decreasing=TRUE),10),horiz=TRUE,las=1)
+barplot(head(sort(table(dat$Make),decreasing=TRUE),10),horiz=TRUE,las=1)
+barplot(violationNames,horiz=TRUE,las=1)
+#barplot(head(sort(table(dat$Description),decreasing=TRUE),10),horiz=TRUE,las=1)
+
+```
+
+
+Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations. 
