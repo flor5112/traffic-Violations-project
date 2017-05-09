@@ -11,3 +11,16 @@ It has been rumored that red cars tend to get more traffic violations more often
 
 Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
 
+### Data input and preproccessing
+```{r}
+dat = read.csv("../Traffic_Violations.csv")
+
+# switch col names to lowercase
+colnames(dat) = tolower(colnames(dat))
+
+# remove any data with NA values
+dat = na.omit(dat)
+
+# remove 'N/A' string from colors
+dat = dat[dat$color!="N/A",]
+```
