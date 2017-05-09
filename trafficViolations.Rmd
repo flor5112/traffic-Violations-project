@@ -11,11 +11,30 @@ It has been rumored that red cars tend to get more traffic violations more often
 
 Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
 
-
+### Libraries
 ```{r}
-setwd("/Users/noemi/Desktop/datasci/traffic-Violations-project/")
+library(e1071)
+source("../lin-regr-util.R")
+```
+ 
+### Data input and cleaning 
+```{r}
+dat = read.csv('../Traffic_Violations.csv')
 
-dat=read.csv("traffic.csv")
+# remove 'N/A' string from colors
+
+dat = dat[dat$Color!="N/A",]
+
+# switch col names to lowercase
+colnames(dat) = tolower(colnames(dat))
+
+# remove any data with NA values
+dat = na.omit(dat)
+
+# adding an output column that checks whether car color is red or not 
+dat$output = NA
+dat$output = ifelse(dat$color == "RED",1,0)
+
 
 ```
 
@@ -24,36 +43,31 @@ To get an idea of what we're working with, we should build some histograms and t
 
 ```{r}
 #par(mfrow=c(3,1))
-violationNames=head(sort(table(dat$Description),decreasing=TRUE),10)
+violationNames=head(sort(table(dat$description),decreasing=TRUE),10)
 names(violationNames)=tolower(c("NOT FOLLOWING TRAFFIC INSTRUCTIONS","NO REGISTRATION","DRIVING WITH SUSPENDED REGISTRATION","DRIVING W/O A LICENSE","USING PHONE WHILE DRIVING","EXPIRED REGISTRATION","FAILURE TO STOP AT STOP SIGN","DRIVING W/SUSPENDED LICENSE","DRIVING W/O SEATBELT","DRIVING OVER SPEED LIMIT"))
 
 
 par(mar=c(5,14,4,0.1))
-barplot(head(sort(table(dat$Color),decreasing=TRUE),10),horiz=TRUE,las=1)
-barplot(head(sort(table(dat$Make),decreasing=TRUE),10),horiz=TRUE,las=1)
+barplot(head(sort(table(dat$color),decreasing=TRUE),10),horiz=TRUE,las=1)
+barplot(head(sort(table(dat$make),decreasing=TRUE),10),horiz=TRUE,las=1)
 barplot(violationNames,horiz=TRUE,las=1)
 #barplot(head(sort(table(dat$Description),decreasing=TRUE),10),horiz=TRUE,las=1)
 
 ```
+Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations.
 
-
-Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations. 
-=======
-### Data input and preproccessing
+###Data Preprocessing
 ```{r}
-dat = read.csv("../Traffic_Violations.csv")
-# remove 'N/A' string from colors
-dat = dat[dat$Color!="N/A",]
+#split our data into test and training data 
+set.seed(123)
+traffic_data = split_data(dat)
+te_dat = traffic_data[[1]]
+tr_dat = traffic_data[[2]]
 
-# switch col names to lowercase
-colnames(dat) = tolower(colnames(dat))
+```
 
-# switch all data to lowercase
-dat = sapply(dat, tolower)
-
-# remove any data with NA values
-dat = na.omit(dat)
-
-
+### How likely is the car that got pulled over red ?
+```{r}
+model1 = naiveBayes()
 ```
 
