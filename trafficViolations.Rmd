@@ -14,13 +14,17 @@ Prior to analyzing the data, we first need to clean it of any empty values and t
 ### Data input and preproccessing
 ```{r}
 dat = read.csv("../Traffic_Violations.csv")
+# remove 'N/A' string from colors
+dat = dat[dat$Color!="N/A",]
 
 # switch col names to lowercase
 colnames(dat) = tolower(colnames(dat))
 
+# switch all data to lowercase
+dat = sapply(dat, tolower)
+
 # remove any data with NA values
 dat = na.omit(dat)
 
-# remove 'N/A' string from colors
-dat = dat[dat$color!="N/A",]
+
 ```
