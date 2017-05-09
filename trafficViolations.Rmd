@@ -11,6 +11,7 @@ It has been rumored that red cars tend to get more traffic violations more often
 
 Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
 
+
 ```{r}
 setwd("/Users/noemi/Desktop/datasci/traffic-Violations-project/")
 
@@ -37,3 +38,22 @@ barplot(violationNames,horiz=TRUE,las=1)
 
 
 Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations. 
+=======
+### Data input and preproccessing
+```{r}
+dat = read.csv("../Traffic_Violations.csv")
+# remove 'N/A' string from colors
+dat = dat[dat$Color!="N/A",]
+
+# switch col names to lowercase
+colnames(dat) = tolower(colnames(dat))
+
+# switch all data to lowercase
+dat = sapply(dat, tolower)
+
+# remove any data with NA values
+dat = na.omit(dat)
+
+
+```
+
