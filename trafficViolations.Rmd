@@ -69,14 +69,20 @@ tr_dat = traffic_data[[3]]
 
 ### How likely is the car that got pulled over red ?
 ```{r}
-model1 = naiveBayes(output ~ make + model, data = t3_dat, type="class")
+model1 = naiveBayes(output ~ make + model + description, data = t3_dat, type="class")
 
-predictions = predict(model1, newdata = te_dat, type= "raw")
+predictions = predict(model1, newdata = tr_dat, type= "raw")
 isItRed = predictions[,2]
 predictions = ifelse(predictions[,1] > predictions[,2], 0, 1)
-actuals = te_dat$output
+actuals = tr_dat$output
 
 conf.matrix = table(actuals, predictions)
 conf.matrix
+
+accuracy = mean(actuals == predictions)
+
 ```
+
+The probability of a car being ulled over & having it be red in Maryland is very low because the mean of our predicted probability is about 10%.
+We can to this conclusion after taking predictions based 
 
