@@ -60,14 +60,23 @@ Analyzing our processed data, we can see that red cars rank in 5th in the top 10
 ```{r}
 #split our data into test and training data 
 set.seed(123)
-traffic_data = split_data(dat)
+traffic_data = split_data(dat, c(0.005, .005, .995))
 te_dat = traffic_data[[1]]
-tr_dat = traffic_data[[2]]
+t3_dat = traffic_data[[2]]
+tr_dat = traffic_data[[3]]
 
 ```
 
 ### How likely is the car that got pulled over red ?
 ```{r}
-model1 = naiveBayes()
+model1 = naiveBayes(output ~ make + model, data = t3_dat, type="class")
+
+predictions = predict(model1, newdata = te_dat, type= "raw")
+isItRed = predictions[,2]
+predictions = ifelse(predictions[,1] > predictions[,2], 0, 1)
+actuals = te_dat$output
+
+conf.matrix = table(actuals, predictions)
+conf.matrix
 ```
 
