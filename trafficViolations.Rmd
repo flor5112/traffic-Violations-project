@@ -35,6 +35,9 @@ dat = na.omit(dat)
 dat$output = NA
 dat$output = ifelse(dat$color == "RED",1,0)
 
+#creates output column based on the whether the driver is from Maryland or not 
+dat$state_output = NA
+dat$state_output = ifelse(dat$state == 'MD',1,0)
 
 ```
 
@@ -85,4 +88,19 @@ accuracy = mean(actuals == predictions)
 
 The probability of a car being ulled over & having it be red in Maryland is very low because the mean of our predicted probability is about 10%.
 We can to this conclusion after taking predictions based 
+
+### Is an out of state car more likely to get pull over at the state Maryland 
+```{r}
+model2 = naiveBayes(state_output ~ ., data = t3_dat, type="class")
+
+predictions = predict(model2, newdata = tr_dat, type= "raw")
+isOutOfState = predictions[,1]
+predictions = ifelse(predictions[,1] > predictions[,2], 0, 1)
+actuals = tr_dat$output
+
+conf.matrix = table(actuals, predictions)
+conf.matrix
+
+accuracy = mean(actuals == predictions)
+```
 
