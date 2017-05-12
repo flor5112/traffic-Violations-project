@@ -16,6 +16,8 @@ Prior to analyzing the data, we first need to clean it of any empty values and t
 library(e1071)
 library(rpart)
 library(rpart.plot)
+library(cluster)
+library(ggmap)
 source("../lin-regr-util.R")
 ```
  
@@ -159,3 +161,22 @@ MODEL 3 Analysis
 barplot(model3$variable.importance)
 ```
 
+### Analysing the Areas Where more the Speeding violations happens 
+```{r}
+#speedingPlot = scale(speedingPlot)
+
+plot(longitude ~ latitude, data = t3_dat )
+speedingPlot = t3_dat[t3_dat$speeding == "yes",c('longitude','latitude')]
+
+num_clusters = 3
+clust = kmeans(speedingPlot, num_clusters)
+clusplot(speedingPlot, clust$cluster, color=TRUE,labels=0, lines=0)
+
+
+mapLatitude = mean(clust$centers[,1])
+mapLongitude = mean(clust$centers[,2])
+
+map = get_map(c(-121.798305, 36.653753),maptype="road", zoom=16)
+
+
+```
