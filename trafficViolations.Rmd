@@ -1,5 +1,5 @@
 ---
-title: "Predicting the probability of a red car getting a traffic violation."
+title: "Does car color influence the chances of getting a speeding ticket?"
 author: "Angel Soriano, Miriam Flores, Noemi Cuin "
 date: "May 12, 2017"
 output:
@@ -7,9 +7,10 @@ output:
   pdf_document: default
 ---
 
-It has been rumored that red cars tend to get more traffic violations more often than any other color of car. Our calculations will be used to see if this rumor is a myth or if the data gathered from a 2017 data set of traffic violations across the country will reflect differently.
+It has been rumored that the color of a car impacts the chances of a car receiving a speeding violation. Our calculations will be used to see if this rumor is a myth or if the data gathered from a 2017 data set of traffic violations from Montgomery County in Maryland will reflect differently. 
 
-Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
+
+Prior to analyzing the data, we first need to clean it of any empty values. Since this data is manually inputted by the police officers giving the violations, sometimes certain values get ignored or mishandled. The color,state,and the make of the vehicle, and the gender of the driver all have values that cannot be processed. 
 
 ### Libraries
 ```{r}
@@ -49,18 +50,19 @@ dat$output = as.factor(dat$output)
 ```
 
 ###Data Exploration and Visualization
-To get an idea of what we're working with, we should build some histograms and tables to vizualize the types of violations our data has as well as the diffe#Remove unkowns from gender rent colors and models of cars.Because there's so much data, we're going to take the top 10 models and colors of the cars, as well as the top 10 traffic violations and build from there. 
+To get an idea of what we're working with, we should build some histograms and tables to visualize the types of violations our data has as well as the different colors and models of cars.Because there's so much data, we're going to take the top 10 models and colors of the cars, as well as the top 10 traffic violations and build from there. 
+
 
 ```{r}
 #par(mfrow=c(3,1))
 violationNames=head(sort(table(dat$description),decreasing=TRUE),10)
-names(violationNames)=tolower(c("NOT FOLLOWING TRAFFIC INSTRUCTIONS","NO REGISTRATION","DRIVING WITH SUSPENDED REGISTRATION","DRIVING W/O A LICENSE","USING PHONE WHILE DRIVING","EXPIRED REGISTRATION","FAILURE TO STOP AT STOP SIGN","DRIVING W/SUSPENDED LICENSE","DRIVING W/O SEATBELT","DRIVING OVER SPEED LIMIT"))
+names(violationNames)=c("NOT FOLLOWING TRAFFIC INSTRUCTIONS","NO REGISTRATION","DRIVING WITH SUSPENDED REGISTRATION","DRIVING W/O A LICENSE","USING PHONE WHILE DRIVING","EXPIRED REGISTRATION","FAILURE TO STOP AT STOP SIGN","DRIVING W/SUSPENDED LICENSE","DRIVING W/O SEATBELT","DRIVING OVER SPEED LIMIT")
 
 
-par(mar=c(5,14,4,0.1))
-barplot(head(sort(table(dat$color),decreasing=TRUE),10),horiz=TRUE,las=1)
-barplot(head(sort(table(dat$make),decreasing=TRUE),10),horiz=TRUE,las=1)
-barplot(violationNames,horiz=TRUE,las=1)
+par(mar=c(5,14,4,0))
+barplot(head(sort(table(dat$color),decreasing=TRUE),10),horiz=TRUE,las=1, main="Top 10 Colors")
+barplot(head(sort(table(dat$make),decreasing=TRUE),10),horiz=TRUE,las=1, main="Top 10 Makes")
+barplot(violationNames,horiz=TRUE,las=1, main="Top 10 Violations")
 #barplot(head(sort(table(dat$Description),decreasing=TRUE),10),horiz=TRUE,las=1)
 
 ```
@@ -91,6 +93,7 @@ head(most_words, n=10)
 ```
 
 ###Data Preprocessing
+The data set we're working with is extremely large which is why when splitting the data, we are only using a small portion. We've also split our data based on these key words found in the description: "SPEED", "EXCEED", "MPH", "MAXIMUM"; this way, we can get a data set related to speeding violations. 
 ```{r}
 #split our data into test and training data 
 set.seed(123)
@@ -119,8 +122,8 @@ mean(actuals == predictions)
 
 ```
 
-The probability of a car being ulled over & having it be red in Maryland is very low because the mean of our predicted probability is about 10%.
-We can to this conclusion after taking predictions based 
+The probability of a car being pulled over & having it be red in Maryland is very low because the mean of our predicted probability is about 10%.
+
 
 ### DECISON TREE : 
 ```{r}
@@ -154,7 +157,7 @@ conf.matrix = table(actuals, predictions)
 conf.matrix
 mean(actuals == predictions)
 ```
-MODEL 3 Analysis 
+### MODEL 3 Analysis 
 ```{r}
 barplot(model3$variable.importance)
 ```
