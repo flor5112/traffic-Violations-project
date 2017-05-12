@@ -65,6 +65,30 @@ barplot(violationNames,horiz=TRUE,las=1)
 
 ```
 Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations.
+###TRIOGRAM 
+```{r}
+descriptions = tolower(tr_dat$description)
+words = strsplit(descriptions, " ")
+for(description in descriptions){
+  sentence = strsplit(description, " ")
+  
+}
+
+#rmv = c("to", "on", "of", "in")
+ws = c()
+
+for(word in words){
+  for(x in 2:(length(word)-1)){
+    ws = append(ws, paste(word[x-1], paste(word[x], word[x+1])))  
+  }
+}
+#most_words <- most_words[!most_words %in% rmv]
+
+most_words = sort(table(ws), decreasing = TRUE)
+
+
+head(most_words, n=10)
+```
 
 ###Data Preprocessing
 ```{r}
@@ -80,6 +104,7 @@ te_dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", te_dat$description),'
 
 ### How likely is the car that got pulled over red ?
 ```{r}
+
 model1 = naiveBayes(output ~ make + model, data = t3_dat)
 
 predictions = predict(model1, newdata = te_dat)
@@ -107,7 +132,7 @@ conf.matrix
 mean(actuals == predictions)
 
 ```
-
+### add color as a factor in our model 
 ```{r}
 
 model3 = rpart(speeding ~ make+model+location+color, data=t3_dat)
@@ -122,3 +147,5 @@ mean(actuals == predictions)
 
 barplot(model2$variable.importance)
 ```
+
+
