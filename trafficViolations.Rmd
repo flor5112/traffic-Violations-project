@@ -6,7 +6,7 @@ output:
   html_document: default
   pdf_document: default
 ---
-#Remove unkowns from gender 
+
 It has been rumored that red cars tend to get more traffic violations more often than any other color of car. Our calculations will be used to see if this rumor is a myth or if the data gathered from a 2017 data set of traffic violations across the country will reflect differently.
 
 Prior to analyzing the data, we first need to clean it of any empty values and then split the data into test and training sets.
@@ -99,21 +99,23 @@ te_dat = traffic_data[[1]]
 t3_dat = traffic_data[[2]]
 tr_dat = traffic_data[[3]]
 t3_dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", t3_dat$description),'yes','no')
+t3_dat$speeding = as.factor(t3_dat$speeding)
 te_dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", te_dat$description),'yes','no')
+te_dat$speeding = as.factor(te_dat$speeding)
 ```
 
 ### How likely is the car that got pulled over red ?
 ```{r}
 
-model1 = naiveBayes(output ~ make + model, data = t3_dat)
+model1 = naiveBayes(speeding ~ make + model, data = t3_dat)
 
 predictions = predict(model1, newdata = te_dat)
-actuals = te_dat$output
+actuals = te_dat$speeding
 
 conf.matrix = table(actuals, predictions)
 conf.matrix
 
-accuracy = mean(actuals == predictions)
+mean(actuals == predictions)
 
 ```
 
@@ -122,7 +124,8 @@ We can to this conclusion after taking predictions based
 
 ### DECISON TREE : 
 ```{r}
-model2 = rpart(speeding ~ make+model+geolocation+location, data=t3_dat)
+model2 = rpart(speeding ~ make+model+geolocation+location, data=t3_dat,method = "class")
+#model2 = rpart(speeding ~., data=t3_dat,method = "class")
 
 predictions = predict(model2, newdata = te_dat, type="class")
 actuals = te_dat$speeding
@@ -132,20 +135,17 @@ conf.matrix
 mean(actuals == predictions)
 
 ```
+### MODEL 2 Analysis 
+```{r}
+plotcp(model2)
+printcp(model2)
+```
+
 ### add color as a factor in our model 
 ```{r}
 
-model3 = rpart(speeding ~ make+model+location+color, data=t3_dat)
 
-predictions = predict(model2, newdata = te_dat, type="class")
-actuals = te_dat$speeding
-
-conf.matrix = table(actuals, predictions)
-conf.matrix
-
-mean(actuals == predictions)
-
-barplot(model2$variable.importance)
 ```
+
 
 
