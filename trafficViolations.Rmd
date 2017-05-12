@@ -144,8 +144,18 @@ printcp(model2)
 ### add color as a factor in our model 
 ```{r}
 
+model3 = rpart(speeding ~ make+model+geolocation+location+color, data=t3_dat,method = "class")
+#model2 = rpart(speeding ~., data=t3_dat,method = "class")
 
+predictions = predict(model3, newdata = te_dat, type="class")
+actuals = te_dat$speeding
+
+conf.matrix = table(actuals, predictions)
+conf.matrix
+mean(actuals == predictions)
 ```
-
-
+MODEL 3 Analysis 
+```{r}
+barplot(model3$variable.importance)
+```
 
