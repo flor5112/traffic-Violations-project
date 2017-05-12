@@ -72,12 +72,12 @@ tr_dat = traffic_data[[3]]
 
 ### How likely is the car that got pulled over red ?
 ```{r}
-model1 = naiveBayes(output ~ make + model + description, data = t3_dat, type="class")
+model1 = naiveBayes(output ~ make + model, data = t3_dat, type="class")
 
-predictions = predict(model1, newdata = tr_dat, type= "raw")
+predictions = predict(model1, newdata = te_dat, type= "raw")
 isItRed = predictions[,2]
 predictions = ifelse(predictions[,1] > predictions[,2], 0, 1)
-actuals = tr_dat$output
+actuals = te_dat$output
 
 conf.matrix = table(actuals, predictions)
 conf.matrix
@@ -103,4 +103,35 @@ conf.matrix
 
 accuracy = mean(actuals == predictions)
 ```
+
+```{r}
+descriptions = tolower(tr_dat$description)
+words = strsplit(descriptions, " ")
+for(description in descriptions){
+  sentence = strsplit(description, " ")
+  
+}
+
+#rmv = c("to", "on", "of", "in")
+ws = c()
+
+for(word in words){
+  for(x in 2:(length(word)-1)){
+    ws = append(ws, paste(word[x-1], paste(word[x], word[x+1])))  
+  }
+}
+#most_words <- most_words[!most_words %in% rmv]
+
+most_words = sort(table(ws), decreasing = TRUE)
+
+
+head(most_words, n=10)
+```
+
+
+
+
+
+
+
 
