@@ -1,5 +1,5 @@
 ---
-title: "Does car color influence the chances of getting a speeding ticket?"
+title: "Is car color a good predictor variable for predicting a speeding violation?"
 author: "Angel Soriano, Miriam Flores, Noemi Cuin "
 date: "May 12, 2017"
 output:
@@ -12,23 +12,22 @@ It has been rumored that the color of a car impacts the chances of a car receivi
 
 Prior to analyzing the data, we first need to clean it of any empty values. Since this data is manually inputted by the police officers giving the violations, sometimes certain values get ignored or mishandled. The color,state,and the make of the vehicle, and the gender of the driver all have values that cannot be processed. 
 
-### Libraries
+### Include Libraries 
 ```{r}
 library(e1071)
 library(rpart)
 library(rpart.plot)
 library(cluster)
-library(ggmap)
 source("../lin-regr-util.R")
 ```
  
 ### Data input and cleaning 
+The first issue we encountered was with our data set. Since it is such a big data set there was many NA or missing values all throughout the data set. However there was also other ways the data was corrupted, such as n/a values in a string which would not be detected by R, as well as unknown or blank entries. In order to solver this issue we went through the levels of our columns seeing which had missing or corrupted values. Then we deleted any row which had a corrupted value in any of those columns.
+
 ```{r}
 dat = read.csv('../Traffic_Violations.csv')
 
-# remove rows tha contain data that will make our analysis more 
-
-
+# remove rows tha contain unneccessary data 
 dat = dat[dat$Color!="N/A",]
 dat = dat[dat$Gender != "U",]
 dat = dat[dat$State != "XX",]
@@ -45,10 +44,18 @@ dat$output = NA
 dat$output = ifelse(dat$color == "RED",1,0)
 dat$output = as.factor(dat$output)
 
-#if traffic violation is speeding == yes else == no
-#dat$speeding = NA
-#dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", dat$description),'yes','no')
-#dat$speeding = as.factor(dat$speeding)
+#Creates speeding column that tells us wheter a 
+dat$speeding = NA
+dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", dat$description),'yes','no')
+dat$speeding = as.factor(dat$speeding)
+
+#split our data into test and training data 
+set.seed(123)
+traffic_data = split_data(dat, c(0.005, .005, .995))
+te_dat = traffic_data[[1]]
+t3_dat = traffic_data[[2]]
+tr_dat = traffic_data[[3]]
+
 ```
 
 ###Data Exploration and Visualization
@@ -68,17 +75,16 @@ barplot(violationNames,horiz=TRUE,las=1, main="Top 10 Violations")
 #barplot(head(sort(table(dat$Description),decreasing=TRUE),10),horiz=TRUE,las=1)
 
 ```
-Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations.
-###TRIOGRAM 
-```{r}
-descriptions = tolower(tr_dat$description)
-words = strsplit(descriptions, " ")
-for(description in descriptions){
-  sentence = strsplit(description, " ")
-  
-}
+Analyzing our processed data, we can see that red cars rank in 5th in the top 10 colors of cars with traffic violations. We can see that speeding barely makes it into top 10 violations, however we suspect that the language revolving speeding is loose and can vary from cop to cop, whom are the ones who input the data. So with that in mind we are going to analyze the words of the descriptions and see if we can make more sense of it. But if we see words correlating with speeding more often then we can use that as an output variable to test the feature color on.
 
-#rmv = c("to", "on", "of", "in")
+As a control group, we believe that make and model would allows us to test the importance of the feature color. We think that make and model is a good indicator for speeding as we think that sportscars are more likely to speed than lets say minivans. We will make a model with and without color seeing how it affects what we do.
+
+
+###TRIGRAM 
+Based on our description sentences we created a trigram to get a better understanding of what to expect for what kind of violations were being commited. From the information we were able to find a correlation with keywords talking about speed or mph, or exceeding. Many of these keywords were correlated with speeding, so we decided we wanted to do prediction on speeding. The data set is quite large so we used a smaller pool of the set to do the trigrams, as the runtime would take too long .
+```{r}
+descriptions = tolower(te_dat$description)
+words = strsplit(descriptions, " ")
 ws = c()
 
 for(word in words){
@@ -86,32 +92,18 @@ for(word in words){
     ws = append(ws, paste(word[x-1], paste(word[x], word[x+1])))  
   }
 }
-#most_words <- most_words[!most_words %in% rmv]
 
 most_words = sort(table(ws), decreasing = TRUE)
 
 
-head(most_words, n=10)
+head(most_words, n=15)
 ```
+We expected the keywords that have to do with speed at a higher frequency. However with what is in the top we were not able to make a strong correlation with the keywords and a corresponding violation. However towards the end it seems that it is consistently talking about speeding or exceeding a certain speed, we think that this was a stronger connection so with this information we decided to use those keywords to create an output varible.We've also split our data based on these key words found in the description: "SPEED", "EXCEED", "MPH", "MAXIMUM"; this way, we can get a data set related to speeding violations. 
 
-###Data Preprocessing
-The data set we're working with is extremely large which is why when splitting the data, we are only using a small portion. We've also split our data based on these key words found in the description: "SPEED", "EXCEED", "MPH", "MAXIMUM"; this way, we can get a data set related to speeding violations. 
+
+### Naive Bayes Model. 
+## Predicts speeding traffic violations based on make and model
 ```{r}
-#split our data into test and training data 
-set.seed(123)
-traffic_data = split_data(dat, c(0.005, .005, .995))
-te_dat = traffic_data[[1]]
-t3_dat = traffic_data[[2]]
-tr_dat = traffic_data[[3]]
-t3_dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", t3_dat$description),'yes','no')
-t3_dat$speeding = as.factor(t3_dat$speeding)
-te_dat$speeding = ifelse(grepl("SPEED|EXCEED|MPH|MAXIMUM", te_dat$description),'yes','no')
-te_dat$speeding = as.factor(te_dat$speeding)
-```
-
-### How likely is the car that got pulled over red ?
-```{r}
-
 model1 = naiveBayes(speeding ~ make + model, data = t3_dat)
 
 predictions = predict(model1, newdata = te_dat)
@@ -123,14 +115,27 @@ conf.matrix
 mean(actuals == predictions)
 
 ```
+Here we have an accuracy of 82% percent. That is pretty good alone so we will see if color will add a significant boost in performance.
 
-The probability of a car being pulled over & having it be red in Maryland is very low because the mean of our predicted probability is about 10%.
+## Predicts speeding violation based on make, model, and color 
+```{r}
+model1 = naiveBayes(speeding ~ make + model+color, data = t3_dat)
+
+predictions = predict(model1, newdata = te_dat)
+actuals = te_dat$speeding
+
+conf.matrix = table(actuals, predictions)
+conf.matrix
+
+mean(actuals == predictions)
+```
+After adding color as a predictor variable we did not see an increase in performance. It actually lowered our performance, however not by much. So we can say that color doesn't have much of an inpact on our model. So we can say that color does not matter much towards a speeding violation. So then what does?
 
 
 ### DECISON TREE : 
+Since our naive bayes model showed us that color didn't make an impact we wanted to support this claim by using a different model. So now we are going to make a model using decision trees because it picks the best variable to make a the prediction on. So we want to see if it will utilize color or ignore it. 
 ```{r}
-model2 = rpart(speeding ~ make+model+geolocation+location, data=t3_dat,method = "class")
-#model2 = rpart(speeding ~., data=t3_dat,method = "class")
+model2 = rpart(speeding ~ make+model, data=t3_dat,method = "class")
 
 predictions = predict(model2, newdata = te_dat, type="class")
 actuals = te_dat$speeding
@@ -140,17 +145,18 @@ conf.matrix
 mean(actuals == predictions)
 
 ```
-### MODEL 2 Analysis 
+From our results we can see that the models are very similar. Meaning that make and model are still good predictor variables for our control group. We will now add color and see if it makes any difference again.
+### Decision Tree Analysis 
 ```{r}
-plotcp(model2)
 printcp(model2)
 ```
 
-### add color as a factor in our model 
+In the analysis we can see that the tree was constructed using both make and model, meaning they are usefull predictor variables.
+### Decision Tree: Includes color 
+
 ```{r}
 
-model3 = rpart(speeding ~ make+model+geolocation+location+color, data=t3_dat,method = "class")
-#model2 = rpart(speeding ~., data=t3_dat,method = "class")
+model3 = rpart(speeding ~ make+model+color, data=t3_dat,method = "class")
 
 predictions = predict(model3, newdata = te_dat, type="class")
 actuals = te_dat$speeding
@@ -159,27 +165,20 @@ conf.matrix = table(actuals, predictions)
 conf.matrix
 mean(actuals == predictions)
 ```
+We added color to see again if it would make a difference as a predictor variable. But again we see no difference, supporting the results of our naive bayes model.
+
 ### MODEL 3 Analysis 
 ```{r}
+printcp(model2)
 barplot(model3$variable.importance)
 ```
+From anylysing our model we were able to see that it ignored the feature color. Meaning that it saw no use for it and that it is irrelevant, which means that it makes little to no difference the color of the car.
 
-### Analysing the Areas Where more the Speeding violations happens 
-```{r}
-#speedingPlot = scale(speedingPlot)
+### Conclusion
+From this project we have learned more than a couple things. First of all we learned how much of a pain a big data set can be, especially when trying to run our models constantly. We also learned how to do analysis on our predictor variables allowing us to choose the best ones.
 
-plot(longitude ~ latitude, data = t3_dat )
-speedingPlot = t3_dat[t3_dat$speeding == "yes",c('longitude','latitude')]
+However this report was about whether color would be a good predictor variable, initially we based this question on the myth that red cars get pulled over more. From our models we can now say that color actually plays a small roll on whether a car is cited or not. From our models we saw that the make and model is more important than the color. This makes sense as I'm sure that sportscars get pulled over more, however thats a question for another time.
 
-num_clusters = 3
-clust = kmeans(speedingPlot, num_clusters)
-clusplot(speedingPlot, clust$cluster, color=TRUE,labels=0, lines=0)
+Overall, we concluded that color does not help us predict speeding traffic violations.  
 
 
-mapLatitude = mean(clust$centers[,1])
-mapLongitude = mean(clust$centers[,2])
-
-map = get_map(c(-121.798305, 36.653753),maptype="road", zoom=16)
-
-
-```
